@@ -1,0 +1,116 @@
+@model HospitalAppointmentSystem.Models.Doctor
+@{
+    ViewData["Title"] = $"Doctor Details - {Model.DoctorName}";
+    string patientName = ViewBag.PatientName as string ?? "Guest";
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1">
+        &larr; Back to Doctor Directory
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Doctor Profile Information -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100 p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="badge bg-secondary mb-2">Doctor ID: #@Model.DoctorId</span>
+                    <h2 class="h3 fw-bold text-dark mb-1">@Model.DoctorName</h2>
+                    <div class="text-primary fw-semibold fs-5">🩺 @Model.Specialization</div>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-info text-dark">State: Query String</span>
+                </div>
+            </div>
+
+            <hr class="my-3 text-muted" />
+
+            <div class="list-group list-group-flush mb-4">
+                <div class="list-group-item px-0 d-flex justify-content-between">
+                    <span class="text-muted">Clinical Experience:</span>
+                    <span class="fw-semibold">@Model.Experience years</span>
+                </div>
+                <div class="list-group-item px-0 d-flex justify-content-between">
+                    <span class="text-muted">Standard Consultation Fee:</span>
+                    <span class="fw-semibold">₹@Model.ConsultationFee.ToString("N0")</span>
+                </div>
+                <div class="list-group-item px-0 d-flex justify-content-between">
+                    <span class="text-muted">Mandatory Service Charge:</span>
+                    <span class="text-secondary fw-semibold">₹100</span>
+                </div>
+                <div class="list-group-item px-0 d-flex justify-content-between bg-light p-3 rounded-2 mt-2">
+                    <span class="fw-bold text-dark">Total Consultation Charge:</span>
+                    <span class="fw-bold text-success fs-5">
+                        ₹@Model.CalculateTotalCharge().ToString("N0")
+                    </span>
+                </div>
+            </div>
+
+            <!-- Response Caching Demonstration -->
+            <div class="p-3 bg-light border rounded-3 mt-auto">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <strong class="text-dark small">⚡ Response Caching Demonstration</strong>
+                    <span class="badge bg-success">Cached (60 sec)</span>
+                </div>
+                <p class="small text-muted mb-0">
+                    Page generated at: <span class="badge bg-dark font-monospace">@DateTime.Now.ToString("HH:mm:ss")</span>
+                    <br />
+                    <em>(Notice: Refreshing the browser within 60 seconds will keep the timestamp identical due to Response Caching).</em>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment Request Form -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold text-dark mb-0">📅 Schedule Appointment</h4>
+                <span class="badge bg-warning text-dark">State: Hidden Field</span>
+            </div>
+            <p class="text-muted small">
+                Submit an appointment booking request for <strong>@Model.DoctorName</strong>.
+            </p>
+
+            @if (patientName != "Guest")
+            {
+                <div class="alert alert-info py-2 px-3 small d-flex align-items-center justify-content-between mb-3">
+                    <span>Booking for patient: <strong>@patientName</strong></span>
+                    <span class="badge bg-primary">From Cookie</span>
+                </div>
+            }
+
+            <form asp-action="Book" method="post" asp-antiforgery="false">
+                <!-- State Management: Hidden field submitting DoctorId -->
+                <input type="hidden" name="doctorId" value="@Model.DoctorId" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small text-muted">Doctor Selected</label>
+                    <input type="text" class="form-control bg-light" value="@Model.DoctorName (@Model.Specialization)" readonly />
+                    <div class="form-text text-muted">Doctor ID (#@Model.DoctorId) is submitted automatically via a hidden field.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small text-muted">Preferred Appointment Date</label>
+                    <input type="date" name="appointmentDate" class="form-control"
+                           value="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")"
+                           min="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold small text-muted">Reason for Consultation</label>
+                    <textarea name="reason" rows="3" class="form-control"
+                              placeholder="Briefly describe your symptoms or reason for visit..." required></textarea>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        Confirm Appointment Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
